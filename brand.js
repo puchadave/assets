@@ -1,4 +1,4 @@
-const MANIFEST_URL='assets/img/manifest.json';
+const MANIFEST_URL='https://raw.githubusercontent.com/puchadave/assets/main/assets/img/manifest.json';
 const brandGrid=document.getElementById('brand-grid');
 const assetList=document.getElementById('asset-list');
 const filter=document.getElementById('asset-filter');
@@ -6,11 +6,12 @@ const version=document.getElementById('manifest-version');
 const brandCount=document.getElementById('brand-count');
 const progress=document.getElementById('progress');
 const rawPath=document.getElementById('raw-path');
-let manifest={brands:[]};
+let manifest={brands:[],canonicalRawBase:'https://raw.githubusercontent.com/puchadave/assets/main/'};
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function initials(name=''){return name.split(/[\s._-]+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'•';}
 function repoPath(path=''){return `https://github.com/puchadave/assets/tree/main/${path}`;}
+function rawAsset(path=''){return `${manifest.canonicalRawBase||'https://raw.githubusercontent.com/puchadave/assets/main/'}${path}`;}
 function fallbackMark(b){return `<span class="mark-fallback"><i>${esc(initials(b.name))}</i>${esc(b.name)}</span>`;}
 
 function renderBrands(){
@@ -18,7 +19,7 @@ function renderBrands(){
   brandGrid.innerHTML=manifest.brands.map(b=>{
     const primary=(b.assets||[]).find(a=>a.role==='primary'&&a.path);
     const mark=primary
-      ? `<img class="brand-logo" src="${esc(primary.path)}" alt="${esc(b.name)} Logo" data-brand-id="${esc(b.id)}">`
+      ? `<img class="brand-logo" src="${esc(rawAsset(primary.path))}" alt="${esc(b.name)} Logo" data-brand-id="${esc(b.id)}">`
       : fallbackMark(b);
     const accent=b.accent?`style="--brand-accent:${esc(b.accent)}"`:'';
     return `<article class="brand-card" ${accent}>
@@ -53,7 +54,8 @@ function renderAssets(q=''){
     return;
   }
   assetList.innerHTML=rows.map(a=>{
-    const target=a.path||repoPath(a.base);
+    const isFile=Boolean(a.path);
+    const target=isFile?rawAsset(a.path):repoPath(a.base);
     return `<div class="asset-row"><div><strong>${esc(a.brand)} · ${esc(a.label||a.role||'Asset')}</strong><small>${esc((a.role||'asset').toUpperCase())} · ${esc((a.format||'').toUpperCase())}</small></div><code>${esc(a.path||a.base)}</code><a href="${esc(target)}">Öffnen ↗</a></div>`;
   }).join('');
 }
@@ -67,7 +69,7 @@ async function loadManifest(){
     renderBrands();
     renderAssets();
   }catch(e){
-    brandGrid.innerHTML='<article class="brand-card"><div class="mark"><span class="mark-fallback"><i>!</i>Manifest</span></div><h3>Brand-Manifest nicht verfügbar</h3><p>Die Portalstruktur ist online, aber assets/img/manifest.json konnte nicht geladen werden.</p></article>';
+    brandGrid.innerHTML='<article class="brand-card"><div class="mark"><span class="mark-fallback"><i>!</i>Manifest</span></div><h3>Brand-Manifest nicht verfügbar</h3><p>Die Portalstruktur ist online, aber das kanonische Brand-Manifest konnte nicht geladen werden.</p></article>';
     assetList.innerHTML='<div class="asset-row"><strong>Manifest konnte nicht geladen werden.</strong></div>';
     console.error(e);
   }
