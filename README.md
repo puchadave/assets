@@ -1,32 +1,52 @@
 # webOwie Assets
 
-Zentrale, versionsstabile Asset-Bibliothek für webOwie, Subbrands und Partner-/Security-Brands.
+Zentrale, dauerhaft referenzierbare Asset-Quelle für das webOwie-Ökosystem und kommende Forks.
 
-Dieses Repository wird als öffentliche Quelle für Logos, Favicons, App-Icons, Banner, Social-Assets und Proxmox-Branding genutzt.
+## Marken
 
-## Public Brand Portal
+- `assets/img/webOwie/corporate/` — webOwie Parent Brand
+- `assets/img/webOwie/subbrands/nodeOS/` — nodeOS (`nodeOS.webOwie.live`)
+- `assets/img/webOwie/subbrands/search/` — search webOwie
+- `assets/img/puchalla.pro/corporate/` — puchalla.pro
+- `assets/img/bnd.zone/corporate/` — bnd.zone
+- `assets/img/bnd.zone/subbrands/cybersicherheit/` — bnd.zone Cybersicherheit
 
-Das Repository enthält zusätzlich ein öffentliches Corporate-Design-Portal mit Markenarchitektur, Logo-Verwendung, Gestaltungsprinzipien, Asset-Index und Nutzungsrichtlinien.
+## Nutzung in Forks
 
-- Portal-Quellcode: `index.html`, `brand.css`, `brand.js`
-- Maschinenlesbarer Brand-Index: `assets/img/manifest.json`
-- Pages-Branch: `gh-pages`
-- Vorgesehene GitHub-Pages-URL: `https://puchadave.github.io/assets/`
+Die kanonischen Logos liegen als SVG vor und können über `raw.githubusercontent.com` direkt referenziert werden.
 
-GitHub Pages muss einmalig in den Repository-Einstellungen auf **Deploy from a branch → `gh-pages` → `/ (root)`** gestellt werden. Danach kann die Seite direkt unter der oben genannten URL ausgeliefert werden.
+Raster-/Favicon-/Banner-/Social-Sets werden reproduzierbar aus den SVG-Quellen erzeugt:
 
-## Pfade
+```bash
+python3 -m pip install pillow cairosvg
+python3 scripts/build-assets.py
+```
 
-- `assets/img/webOwie/corporate/`
-- `assets/img/webOwie/subbrands/nodeOS/`
-- `assets/img/webOwie/subbrands/search/`
-- `assets/img/puchalla.pro/corporate/`
-- `assets/img/bnd.zone/corporate/`
-- `assets/img/bnd.zone/subbrands/cybersicherheit/`
-- `proxmox/`
+## Proxmox
 
-Maschinenlesbarer Index: `assets/img/manifest.json`
+Self-contained One-Click-Installer:
 
-## Asset-Prinzip
+```bash
+bash proxmox/install-webowie-proxmox-branding.sh
+```
 
-SVG und ausdrücklich bereitgestellte Originaldateien sind die visuelle Quelle der Wahrheit. Abgeleitete PNG/JPG-Dateien dürfen automatisiert erzeugt werden, sollen die Originale aber nicht ersetzen. Bestehende Pfade sollten möglichst stabil bleiben, damit Websites, Installer, Forks und Automatisierungen nicht durch Umbenennungen brechen.
+Der Installer enthält die benötigten Proxmox-Bilder bereits eingebettet.
+
+## Struktur
+
+```text
+assets/img/
+├── webOwie/
+│   ├── corporate/
+│   └── subbrands/
+│       ├── nodeOS/
+│       └── search/
+├── puchalla.pro/
+│   └── corporate/
+└── bnd.zone/
+    ├── corporate/
+    └── subbrands/
+        └── cybersicherheit/
+```
+
+`assets/img/manifest.json` ist die maschinenlesbare Brand-Registry.
