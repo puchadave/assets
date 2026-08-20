@@ -1,0 +1,11 @@
+{
+  "brand": "webOwie nodeOS",
+  "type": "subbrand",
+  "domain": "nodeOS.webOwie.live",
+  "tagline": "ALPINE-NATIVE SERVER PLATFORM",
+  "colors": {
+    "obsidian_black": "#000000",
+    "signal_white": "#F5F5F5",
+    "node_cyan": "#5DD9E8"
+  }
+}
