@@ -1,0 +1,10 @@
+{
+  "brand": "webOwie",
+  "type": "parent brand",
+  "tagline": "PARENT BRAND · CORPORATE IDENTITY",
+  "colors": {
+    "obsidian_black": "#000000",
+    "signal_white": "#F5F5F5",
+    "node_cyan": "#5DD9E8"
+  }
+}
