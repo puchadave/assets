@@ -10,14 +10,16 @@ let manifest={brands:[]};
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function initials(name=''){return name.split(/[\s._-]+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'•';}
-function repoPath(path){return `https://github.com/puchadave/assets/tree/main/${path}`;}
+function repoPath(path=''){return `https://github.com/puchadave/assets/tree/main/${path}`;}
 function fallbackMark(b){return `<span class="mark-fallback"><i>${esc(initials(b.name))}</i>${esc(b.name)}</span>`;}
 
 function renderBrands(){
   brandCount.textContent=manifest.brands.length;
   brandGrid.innerHTML=manifest.brands.map(b=>{
     const primary=(b.assets||[]).find(a=>a.role==='primary'&&a.path);
-    const mark=primary?`<img src="${esc(primary.path)}" alt="${esc(b.name)} Logo" onerror="this.outerHTML='${fallbackMark(b).replace(/'/g,'&#39;')}'">`:fallbackMark(b);
+    const mark=primary
+      ? `<img class="brand-logo" src="${esc(primary.path)}" alt="${esc(b.name)} Logo" data-brand-id="${esc(b.id)}">`
+      : fallbackMark(b);
     const accent=b.accent?`style="--brand-accent:${esc(b.accent)}"`:'';
     return `<article class="brand-card" ${accent}>
       <div class="mark">${mark}</div>
@@ -25,17 +27,35 @@ function renderBrands(){
       <div class="brand-links"><a href="#assets" data-brand="${esc(b.id)}">Assets</a><a href="${esc(repoPath(b.path))}">Source ↗</a></div>
     </article>`;
   }).join('');
-  document.querySelectorAll('[data-brand]').forEach(a=>a.addEventListener('click',()=>{filter.value=a.dataset.brand;renderAssets(a.dataset.brand);}));
+
+  document.querySelectorAll('.brand-logo').forEach(img=>{
+    img.addEventListener('error',()=>{
+      const b=manifest.brands.find(x=>x.id===img.dataset.brandId);
+      if(b)img.closest('.mark').innerHTML=fallbackMark(b);
+    },{once:true});
+  });
+
+  document.querySelectorAll('[data-brand]').forEach(a=>a.addEventListener('click',()=>{
+    filter.value=a.dataset.brand;
+    renderAssets(a.dataset.brand);
+  }));
 }
 
 function flattenAssets(){
   return manifest.brands.flatMap(b=>(b.assets||[]).map(a=>({...a,brand:b.name,brandId:b.id,base:b.path})));
 }
+
 function renderAssets(q=''){
   const needle=q.trim().toLowerCase();
   const rows=flattenAssets().filter(a=>!needle||[a.brand,a.brandId,a.role,a.format,a.path,a.label].join(' ').toLowerCase().includes(needle));
-  if(!rows.length){assetList.innerHTML='<div class="asset-row"><div><strong>Keine passenden Assets im Manifest</strong><small>Neue Dateien werden über assets/img/manifest.json registriert.</small></div></div>';return;}
-  assetList.innerHTML=rows.map(a=>`<div class="asset-row"><div><strong>${esc(a.brand)} · ${esc(a.label||a.role||'Asset')}</strong><small>${esc((a.role||'asset').toUpperCase())} · ${esc((a.format||'').toUpperCase())}</small></div><code>${esc(a.path||a.base)}</code><a href="${esc(a.path||repoPath(a.base))}">Öffnen ↗</a></div>`).join('');
+  if(!rows.length){
+    assetList.innerHTML='<div class="asset-row"><div><strong>Keine passenden Assets im Manifest</strong><small>Neue Dateien werden über assets/img/manifest.json registriert.</small></div></div>';
+    return;
+  }
+  assetList.innerHTML=rows.map(a=>{
+    const target=a.path||repoPath(a.base);
+    return `<div class="asset-row"><div><strong>${esc(a.brand)} · ${esc(a.label||a.role||'Asset')}</strong><small>${esc((a.role||'asset').toUpperCase())} · ${esc((a.format||'').toUpperCase())}</small></div><code>${esc(a.path||a.base)}</code><a href="${esc(target)}">Öffnen ↗</a></div>`;
+  }).join('');
 }
 
 async function loadManifest(){
@@ -44,7 +64,8 @@ async function loadManifest(){
     if(!r.ok)throw new Error(`HTTP ${r.status}`);
     manifest=await r.json();
     version.textContent=`manifest ${manifest.version||'–'}`;
-    renderBrands();renderAssets();
+    renderBrands();
+    renderAssets();
   }catch(e){
     brandGrid.innerHTML='<article class="brand-card"><div class="mark"><span class="mark-fallback"><i>!</i>Manifest</span></div><h3>Brand-Manifest nicht verfügbar</h3><p>Die Portalstruktur ist online, aber assets/img/manifest.json konnte nicht geladen werden.</p></article>';
     assetList.innerHTML='<div class="asset-row"><strong>Manifest konnte nicht geladen werden.</strong></div>';
@@ -53,7 +74,19 @@ async function loadManifest(){
 }
 
 filter?.addEventListener('input',e=>renderAssets(e.target.value));
-document.getElementById('copy-path')?.addEventListener('click',async e=>{try{await navigator.clipboard.writeText(rawPath.textContent);e.currentTarget.textContent='Kopiert';setTimeout(()=>e.currentTarget.textContent='Kopieren',1200)}catch{}});
-window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-innerHeight;progress.style.width=`${h>0?(scrollY/h)*100:0}%`;},{passive:true});
-window.addEventListener('pointermove',e=>{document.documentElement.style.setProperty('--mx',`${e.clientX}px`);document.documentElement.style.setProperty('--my',`${e.clientY}px`);},{passive:true});
+document.getElementById('copy-path')?.addEventListener('click',async e=>{
+  try{
+    await navigator.clipboard.writeText(rawPath.textContent);
+    e.currentTarget.textContent='Kopiert';
+    setTimeout(()=>e.currentTarget.textContent='Kopieren',1200);
+  }catch{}
+});
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-innerHeight;
+  progress.style.width=`${h>0?(scrollY/h)*100:0}%`;
+},{passive:true});
+window.addEventListener('pointermove',e=>{
+  document.documentElement.style.setProperty('--mx',`${e.clientX}px`);
+  document.documentElement.style.setProperty('--my',`${e.clientY}px`);
+},{passive:true});
 loadManifest();
