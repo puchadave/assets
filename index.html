@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#080b10">
+  <meta name="description" content="Public Corporate Design Portal und Brand Asset Library für webOwie, puchalla.pro, bnd.zone und zugehörige Subbrands.">
+  <title>Brand System · webOwie Ecosystem</title>
+  <link rel="stylesheet" href="brand.css">
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="grid" aria-hidden="true"></div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand-home" href="#top" aria-label="Brand System Startseite">
+      <span class="brand-glyph">W</span>
+      <span><strong>Brand System</strong><small>webOwie ecosystem</small></span>
+    </a>
+    <nav aria-label="Hauptnavigation">
+      <a href="#brands">Marken</a>
+      <a href="#usage">Verwendung</a>
+      <a href="#design">Designsystem</a>
+      <a href="#assets">Assets</a>
+      <a href="#legal">Richtlinien</a>
+    </nav>
+    <a class="repo-link" href="https://github.com/puchadave/assets">GitHub ↗</a>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="eyebrow"><span class="pulse"></span> PUBLIC BRAND STANDARD</div>
+      <h1>Ein System.<br><span>Mehrere Marken.</span><br>Eine visuelle Sprache.</h1>
+      <p class="lead">Offizielle Markenübersicht, Gestaltungsrichtlinien und zentrale Asset-Bibliothek für das webOwie-Ökosystem. Diese Seite ist die öffentliche Referenz für korrekte Logo-, Farb- und Markenverwendung.</p>
+      <div class="hero-actions">
+        <a class="button primary" href="#brands">Marken entdecken</a>
+        <a class="button" href="assets/img/manifest.json">Manifest ansehen</a>
+      </div>
+      <div class="statusbar">
+        <span><b id="brand-count">–</b> Marken &amp; Subbrands</span>
+        <span><b>SVG / PNG</b> bevorzugte Formate</span>
+        <span><b>Versioniert</b> stabile GitHub-Pfade</span>
+      </div>
+    </section>
+
+    <section class="shell section" id="brands">
+      <header class="section-head">
+        <div><span class="section-index">01</span><h2>Markenarchitektur</h2></div>
+        <p>Jede Marke hat eine klar definierte Rolle. Subbrands erben die visuelle DNA ihrer Dachmarke, dürfen aber einen eigenen funktionalen Charakter besitzen.</p>
+      </header>
+      <div class="brand-grid" id="brand-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="shell section" id="usage">
+      <header class="section-head">
+        <div><span class="section-index">02</span><h2>Logo-Verwendung</h2></div>
+        <p>Das Logo ist kein Bastelmaterial. Skalieren ist erlaubt. Improvisierte Kunstprojekte mit Schatten, Verzerrung und Fantasiefarben sind es nicht.</p>
+      </header>
+
+      <div class="rule-grid">
+        <article class="rule-card good">
+          <span class="rule-tag">DO</span>
+          <h3>Originaldateien verwenden</h3>
+          <p>Für Web und UI bevorzugt SVG. Für Rasteranwendungen PNG in ausreichend hoher Auflösung. Immer Assets aus diesem Repository verwenden.</p>
+        </article>
+        <article class="rule-card good">
+          <span class="rule-tag">DO</span>
+          <h3>Schutzraum respektieren</h3>
+          <p>Rund um Wort- und Bildmarke mindestens eine Einheit X freihalten. X entspricht der Höhe des prägenden Signet-Elements beziehungsweise der Versalhöhe der Wortmarke.</p>
+        </article>
+        <article class="rule-card bad">
+          <span class="rule-tag">DON’T</span>
+          <h3>Nicht verzerren</h3>
+          <p>Seitenverhältnis, Laufweite und Anordnung von Signet und Wortmarke bleiben unverändert. Keine Stauchung, Dehnung oder Rotation.</p>
+        </article>
+        <article class="rule-card bad">
+          <span class="rule-tag">DON’T</span>
+          <h3>Keine freien Effekte</h3>
+          <p>Keine Glow-, Outline-, Schatten-, Bevel- oder Gradient-Effekte außerhalb ausdrücklich freigegebener Varianten.</p>
+        </article>
+        <article class="rule-card bad">
+          <span class="rule-tag">DON’T</span>
+          <h3>Nicht nachzeichnen</h3>
+          <p>Logos nicht per KI, Screenshot, Auto-Trace oder fremder Schrift rekonstruieren. Die Original-Vektordatei ist die Referenz.</p>
+        </article>
+        <article class="rule-card good">
+          <span class="rule-tag">DO</span>
+          <h3>Kontrast sicherstellen</h3>
+          <p>Auf dunklen Flächen die freigegebene helle/inverse Variante verwenden, auf hellen Flächen die dunkle oder primäre Variante.</p>
+        </article>
+      </div>
+
+      <div class="metric-row">
+        <div><span class="metric">24 px</span><small>empfohlene Mindesthöhe Icon digital</small></div>
+        <div><span class="metric">120 px</span><small>empfohlene Mindestbreite Wortmarke digital</small></div>
+        <div><span class="metric">8 mm</span><small>empfohlene Mindesthöhe Icon Print</small></div>
+        <div><span class="metric">1× X</span><small>Mindest-Schutzraum rund um das Logo</small></div>
+      </div>
+    </section>
+
+    <section class="shell section" id="design">
+      <header class="section-head">
+        <div><span class="section-index">03</span><h2>Corporate Design</h2></div>
+        <p>Das gemeinsame Designsystem ist technisch, präzise und modular. Markenfarben kommen aus dem jeweiligen Brand-Manifest; die Portaloberfläche selbst bleibt bewusst neutral.</p>
+      </header>
+
+      <div class="design-grid">
+        <article class="panel">
+          <span class="panel-kicker">TYPOGRAPHY</span>
+          <h3 class="type-display">Aa</h3>
+          <p><strong>Display:</strong> klare, geometrische Sans-Serif mit hoher Wiedererkennbarkeit.<br><strong>Interface/Text:</strong> systemnahe Sans-Serif für maximale Lesbarkeit.<br><strong>Code/Tech:</strong> Monospace für technische Kennungen, CLI und Infrastruktur.</p>
+        </article>
+        <article class="panel">
+          <span class="panel-kicker">LAYOUT</span>
+          <div class="layout-demo" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <p>Rasterbasiert, großzügige Abstände, klare Informationshierarchie. Funktion vor Dekoration. Animationen erklären Zustände, statt Aufmerksamkeit um ihrer selbst willen zu erzeugen.</p>
+        </article>
+        <article class="panel">
+          <span class="panel-kicker">VOICE</span>
+          <h3>Präzise. Direkt. Technisch.</h3>
+          <p>Keine leeren Superlative. Aussagen müssen nachvollziehbar und funktional sein. Sicherheits-, Forschungs- und Infrastrukturkommunikation trennt Fakten klar von Bewertung.</p>
+        </article>
+        <article class="panel">
+          <span class="panel-kicker">ACCESSIBILITY</span>
+          <h3>Kontrast ist Teil des Designs.</h3>
+          <p>Text und UI müssen auch ohne Farbe verständlich bleiben. Alternative Texte für aussagekräftige Grafiken, reduzierte Animation bei <code>prefers-reduced-motion</code> und ausreichende Touch-Ziele sind Standard.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="shell section" id="assets">
+      <header class="section-head">
+        <div><span class="section-index">04</span><h2>Asset Library</h2></div>
+        <p>Die Bibliothek dient als kanonische Quelle für Websites, Anwendungen, Forks, Installer, Dokumentation und Social Assets. Pfade sollen versionsstabil bleiben.</p>
+      </header>
+
+      <div class="asset-toolbar">
+        <input id="asset-filter" type="search" placeholder="Marke oder Asset filtern …" aria-label="Assets filtern">
+        <a class="button small" href="https://github.com/puchadave/assets/tree/main/assets/img">Repository öffnen ↗</a>
+      </div>
+      <div id="asset-list" class="asset-list"></div>
+
+      <div class="code-panel">
+        <div class="code-head"><span>Canonical raw path</span><button id="copy-path" type="button">Kopieren</button></div>
+        <pre><code id="raw-path">https://raw.githubusercontent.com/puchadave/assets/main/assets/img/&lt;brand&gt;/&lt;scope&gt;/&lt;asset&gt;</code></pre>
+      </div>
+    </section>
+
+    <section class="shell section" id="legal">
+      <header class="section-head">
+        <div><span class="section-index">05</span><h2>Marken- &amp; Nutzungsrichtlinien</h2></div>
+        <p>Öffentlich verfügbar bedeutet nicht automatisch frei von Markenrechten. Die Veröffentlichung dient der korrekten Verwendung und technischen Integration.</p>
+      </header>
+      <div class="legal-grid">
+        <article><h3>Erlaubt</h3><p>Redaktionelle Nennung, technische Integration und Darstellung der Marken zur eindeutigen Referenz, sofern keine Partnerschaft oder Freigabe suggeriert wird.</p></article>
+        <article><h3>Freigabe erforderlich</h3><p>Co-Branding, Merchandising, bezahlte Werbung, Produktverpackungen, stark hervorgehobene Drittverwendung und jede Verwendung, die eine offizielle Kooperation vermuten lässt.</p></article>
+        <article><h3>Nicht erlaubt</h3><p>Veränderte oder irreführende Marken, Nutzung als eigenes Firmen- oder Produktkennzeichen, täuschend ähnliche Ableitungen sowie Darstellung in rechtswidrigem oder rufschädigendem Kontext.</p></article>
+        <article><h3>Rechtsstatus</h3><p>Aus der Aufnahme eines Zeichens in dieses Portal darf kein bestimmter Register- oder Schutzstatus abgeleitet werden. Maßgeblich sind die jeweils tatsächlich bestehenden Rechte und Registrierungen.</p></article>
+      </div>
+      <p class="legal-note">Bei widersprüchlichen Dateien gilt die jeweils neueste, im Repository dokumentierte und freigegebene Version als visuelle Referenz.</p>
+    </section>
+  </main>
+
+  <footer class="footer shell">
+    <div><strong>webOwie Ecosystem Brand System</strong><br><span>Public Corporate Design Reference</span></div>
+    <div class="footer-meta"><span id="manifest-version">manifest –</span><span>Updated 2026-08-20</span><a href="https://github.com/puchadave/assets">Source ↗</a></div>
+  </footer>
+
+  <script src="brand.js" defer></script>
+</body>
+</html>
