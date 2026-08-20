@@ -1,0 +1,81 @@
+{
+  "schema": "webowie.brand-assets/v1",
+  "version": "2026.08.20",
+  "updated": "2026-08-20",
+  "repository": "puchadave/assets",
+  "canonicalRawBase": "https://raw.githubusercontent.com/puchadave/assets/main/",
+  "brands": [
+    {
+      "id": "webowie",
+      "name": "webOwie",
+      "type": "Masterbrand",
+      "path": "assets/img/webOwie/corporate/",
+      "description": "Dachmarke für die webOwie Plattform, lokale KI, Infrastruktur, Automatisierung und produktübergreifende Systemkomponenten.",
+      "assets": [
+        {"label": "Corporate asset directory", "role": "source", "format": "repo"}
+      ]
+    },
+    {
+      "id": "webowie-nodeos",
+      "name": "webOwie nodeOS",
+      "type": "Product Subbrand",
+      "path": "assets/img/webOwie/subbrands/nodeOS/",
+      "description": "System- und Node-Marke für das webOwie Edge-, LXC- und Appliance-Ökosystem. Visuell der webOwie Dachmarke untergeordnet.",
+      "assets": [
+        {"label": "nodeOS asset directory", "role": "source", "format": "repo"}
+      ]
+    },
+    {
+      "id": "webowie-search",
+      "name": "webOwie Search",
+      "type": "Product Subbrand",
+      "path": "assets/img/webOwie/subbrands/search/",
+      "description": "Subbrand für Search-, Research- und datenquellenübergreifende Discovery-Funktionen innerhalb des webOwie Ökosystems.",
+      "assets": [
+        {"label": "Search asset directory", "role": "source", "format": "repo"}
+      ]
+    },
+    {
+      "id": "puchalla-pro",
+      "name": "puchalla.pro",
+      "type": "Professional Brand",
+      "path": "assets/img/puchalla.pro/corporate/",
+      "description": "Professionelle Personen- und Beratungsmarke für Systemarchitektur, Strategie, Technologie und fachliche Veröffentlichungen.",
+      "assets": [
+        {"label": "Corporate asset directory", "role": "source", "format": "repo"}
+      ]
+    },
+    {
+      "id": "bnd-zone",
+      "name": "bnd.zone",
+      "type": "Security / Intelligence Brand",
+      "path": "assets/img/bnd.zone/corporate/",
+      "description": "Eigenständige Sicherheits-, Intelligence- und Research-Marke. Die Gestaltung muss eine klare Abgrenzung zu Behörden und fremden Organisationen bewahren.",
+      "assets": [
+        {"label": "Corporate asset directory", "role": "source", "format": "repo"}
+      ]
+    },
+    {
+      "id": "bnd-zone-cybersecurity",
+      "name": "bnd.zone Cybersicherheit",
+      "type": "Security Subbrand",
+      "path": "assets/img/bnd.zone/subbrands/cybersicherheit/",
+      "description": "Fachlicher Subbrand für Cybersicherheit, digitale Gefahrenabwehr, OSINT-nahe Sicherheitsarbeit und technische Aufklärung.",
+      "assets": [
+        {"label": "Cybersicherheit asset directory", "role": "source", "format": "repo"}
+      ]
+    },
+    {
+      "id": "puchalla-email",
+      "name": "puchalla.email",
+      "type": "Communication Brand / Legacy Assets",
+      "path": "",
+      "description": "Bestehende Kommunikationsmarke mit bereits im Repository vorhandenen SVG-Wortmarken. Diese Legacy-Dateien bleiben für bestehende Integrationen erreichbar.",
+      "assets": [
+        {"label": "White logo", "role": "primary", "format": "svg", "path": "puchalla.email-logo-white.svg"},
+        {"label": "White logo 5000px", "role": "alternate", "format": "svg", "path": "puchalla.email-logo-white_5000px.svg"},
+        {"label": "Black logo 5000px", "role": "alternate", "format": "svg", "path": "puchalla.email-logo-black_5000px.svg"}
+      ]
+    }
+  ]
+}
