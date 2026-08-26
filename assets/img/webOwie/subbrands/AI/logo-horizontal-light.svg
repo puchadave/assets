@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" role="img" aria-labelledby="t d">
+  <title id="t">webOwie AI</title><desc id="d">webOwie AI primary horizontal logo for light surfaces</desc>
+  <g transform="translate(42 30)" fill="none" stroke="#000000" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M130 8 236 69v122l-106 61L24 191V69z"/>
+    <path d="M130 8v244M24 69l106 61 106-61M24 191l106-61 106 61"/>
+    <path d="M78 99c22-5 39-16 52-35 13 19 30 30 52 35-6 22-6 40 0 62-22 5-39 16-52 35-13-19-30-30-52-35 6-22 6-40 0-62z"/>
+  </g>
+  <circle cx="172" cy="160" r="15" fill="#5DD9E8"/>
+  <text x="326" y="176" fill="#000000" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="108" font-weight="650" letter-spacing="-4">webOwie</text>
+  <text x="815" y="176" fill="#258896" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="108" font-weight="650">AI</text>
+  <text x="331" y="224" fill="#586168" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="22" font-weight="600" letter-spacing="5">INTELLIGENCE · AUTOMATION · CONTROL</text>
+</svg>
