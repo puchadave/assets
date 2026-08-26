@@ -18,12 +18,17 @@ GitHub Pages muss einmalig in den Repository-Einstellungen auf **Deploy from a b
 ## Pfade
 
 - `assets/img/webOwie/corporate/`
+- `assets/img/webOwie/subbrands/AI/`
 - `assets/img/webOwie/subbrands/nodeOS/`
 - `assets/img/webOwie/subbrands/search/`
 - `assets/img/puchalla.pro/corporate/`
 - `assets/img/bnd.zone/corporate/`
 - `assets/img/bnd.zone/subbrands/cybersicherheit/`
 - `proxmox/`
+
+### webOwie AI
+
+Der Subbrand `webOwie AI` verwendet die webOwie-Dachmarke unverändert und kennzeichnet den AI-Produktbereich ausschließlich über das untergeordnete Node-Cyan-Modul. Das kanonische Set liegt unter `assets/img/webOwie/subbrands/AI/` und enthält Dark-/Light-Lockups, Stacked-Varianten, Monochrom, App-Icon, Favicon, GitHub-Social-Preview und `brand.json`.
 
 Maschinenlesbarer Index: `assets/img/manifest.json`
 
