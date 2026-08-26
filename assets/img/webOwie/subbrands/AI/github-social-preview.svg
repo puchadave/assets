@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-labelledby="t d">
+<title id="t">webOwie AI GitHub social preview</title><desc id="d">GitHub and social preview asset for webOwie AI</desc>
+<rect width="1280" height="640" fill="#000000"/>
+<g opacity=".22" stroke="#2B3138" stroke-width="1"><path d="M0 120h1280M0 240h1280M0 360h1280M0 480h1280M160 0v640M320 0v640M480 0v640M640 0v640M800 0v640M960 0v640M1120 0v640"/></g>
+<g transform="translate(116 145)" fill="none" stroke="#F5F5F5" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"><path d="M155 0 290 78v156l-135 78L20 234V78z"/><path d="M155 0v312M20 78l135 78 135-78M20 234l135-78 135 78"/><path d="M89 116c28-6 50-20 66-44 16 24 38 38 66 44-7 28-7 51 0 79-28 6-50 20-66 44-16-24-38-38-66-44 7-28 7-51 0-79z"/></g>
+<circle cx="271" cy="301" r="21" fill="#5DD9E8"/>
+<text x="478" y="302" fill="#F5F5F5" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="118" font-weight="650" letter-spacing="-5">webOwie</text>
+<text x="1010" y="302" fill="#5DD9E8" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="118" font-weight="700">AI</text>
+<text x="485" y="375" fill="#BFC3C7" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="28" font-weight="600" letter-spacing="6">INTELLIGENCE · AUTOMATION · CONTROL</text>
+<rect x="480" y="438" width="196" height="4" fill="#5DD9E8"/><text x="485" y="497" fill="#7F8992" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="25">Local AI · Agent Fabric · Inference Routing · Automation</text>
+</svg>
