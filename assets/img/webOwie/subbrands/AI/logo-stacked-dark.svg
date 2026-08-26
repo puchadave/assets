@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 820" role="img" aria-labelledby="t d">
+  <title id="t">webOwie AI</title><desc id="d">Stacked webOwie AI logo for dark surfaces</desc>
+  <g transform="translate(220 72)" fill="none" stroke="#F5F5F5" stroke-width="11" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M140 0 260 69v138l-120 69L20 207V69z"/>
+    <path d="M140 0v276M20 69l120 69 120-69M20 207l120-69 120 69"/>
+    <path d="M81 103c24-5 44-18 59-39 15 21 35 34 59 39-7 25-7 45 0 70-24 5-44 18-59 39-15-21-35-34-59-39 7-25 7-45 0-70z"/>
+  </g>
+  <circle cx="360" cy="210" r="17" fill="#5DD9E8"/>
+  <text x="360" y="492" text-anchor="middle" fill="#F5F5F5" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="104" font-weight="650" letter-spacing="-4">webOwie</text>
+  <text x="360" y="590" text-anchor="middle" fill="#5DD9E8" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="92" font-weight="700" letter-spacing="7">AI</text>
+  <line x1="150" y1="642" x2="570" y2="642" stroke="#2B3138" stroke-width="2"/>
+  <text x="360" y="699" text-anchor="middle" fill="#BFC3C7" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="21" font-weight="600" letter-spacing="4">INTELLIGENCE · AUTOMATION · CONTROL</text>
+</svg>
