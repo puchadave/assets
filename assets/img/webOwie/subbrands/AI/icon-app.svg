@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t d">
+  <title id="t">webOwie AI app icon</title><desc id="d">Application icon using the webOwie parent mark and AI subbrand accent</desc>
+  <rect width="512" height="512" rx="108" fill="#000000"/>
+  <g transform="translate(84 78)" fill="none" stroke="#F5F5F5" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M172 0 322 86v172l-150 86L22 258V86z"/>
+    <path d="M172 0v344M22 86l150 86 150-86M22 258l150-86 150 86"/>
+    <path d="M98 127c31-7 55-22 74-49 19 27 43 42 74 49-8 31-8 56 0 87-31 7-55 22-74 49-19-27-43-42-74-49 8-31 8-56 0-87z"/>
+  </g>
+  <circle cx="256" cy="250" r="24" fill="#5DD9E8"/>
+  <rect x="354" y="354" width="112" height="82" rx="18" fill="#5DD9E8"/>
+  <text x="410" y="409" text-anchor="middle" fill="#000000" font-family="Inter,system-ui,-apple-system,Segoe UI,sans-serif" font-size="45" font-weight="800">AI</text>
+</svg>

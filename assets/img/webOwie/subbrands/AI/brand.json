@@ -1,0 +1,20 @@
+{
+  "schema_version": 2,
+  "brand": "webOwie AI",
+  "type": "product subbrand",
+  "parent": "webOwie",
+  "tagline": "INTELLIGENCE · AUTOMATION · CONTROL",
+  "colors": {
+    "obsidian_black": "#000000",
+    "signal_white": "#F5F5F5",
+    "node_cyan": "#5DD9E8",
+    "structural_grey": "#2B3138",
+    "secondary_grey": "#BFC3C7"
+  },
+  "rules": {
+    "parent_mark_unchanged": true,
+    "ai_is_subordinate": true,
+    "canonical_format": "svg",
+    "gradients_in_canonical_logo": false
+  }
+}

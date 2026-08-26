@@ -1,7 +1,7 @@
 {
   "schema": "webowie.brand-assets/v1",
-  "version": "2026.08.20",
-  "updated": "2026-08-20",
+  "version": "2026.08.26",
+  "updated": "2026-08-26",
   "repository": "puchadave/assets",
   "canonicalRawBase": "https://raw.githubusercontent.com/puchadave/assets/main/",
   "brands": [
@@ -13,6 +13,23 @@
       "description": "Dachmarke für die webOwie Plattform, lokale KI, Infrastruktur, Automatisierung und produktübergreifende Systemkomponenten.",
       "assets": [
         {"label": "Corporate asset directory", "role": "source", "format": "repo"}
+      ]
+    },
+    {
+      "id": "webowie-ai",
+      "name": "webOwie AI",
+      "type": "Product Subbrand",
+      "path": "assets/img/webOwie/subbrands/AI/",
+      "description": "KI-Subbrand für OmniRoute, AI Gateway, Agent Fabric, lokale Modellorchestrierung, Inference Routing und Automatisierung. Visuell strikt der webOwie Dachmarke untergeordnet.",
+      "assets": [
+        {"label": "Horizontal dark", "role": "primary", "format": "svg", "path": "assets/img/webOwie/subbrands/AI/logo-horizontal-dark.svg"},
+        {"label": "Horizontal light", "role": "primary-light", "format": "svg", "path": "assets/img/webOwie/subbrands/AI/logo-horizontal-light.svg"},
+        {"label": "Stacked dark", "role": "alternate", "format": "svg", "path": "assets/img/webOwie/subbrands/AI/logo-stacked-dark.svg"},
+        {"label": "Stacked light", "role": "alternate-light", "format": "svg", "path": "assets/img/webOwie/subbrands/AI/logo-stacked-light.svg"},
+        {"label": "Monochrome white", "role": "monochrome", "format": "svg", "path": "assets/img/webOwie/subbrands/AI/logo-mono-white.svg"},
+        {"label": "Application icon", "role": "app-icon", "format": "svg", "path": "assets/img/webOwie/subbrands/AI/icon-app.svg"},
+        {"label": "Favicon", "role": "favicon", "format": "svg", "path": "assets/img/webOwie/subbrands/AI/favicon.svg"},
+        {"label": "GitHub social preview", "role": "social", "format": "svg", "path": "assets/img/webOwie/subbrands/AI/github-social-preview.svg"}
       ]
     },
     {
