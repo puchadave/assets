@@ -6,6 +6,11 @@ export default defineConfig({
     include: ['tests/**/*.test.js'],
     coverage: {
       include: ['brand.js'],
+      thresholds: {
+        lines: 90,
+        statements: 90,
+        branches: 80,
+      },
     },
   },
 });

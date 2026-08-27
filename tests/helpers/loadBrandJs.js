@@ -1,10 +1,4 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { JSDOM } from 'jsdom';
-
-const sourcePath = resolve(process.cwd(), 'brand.js');
-const source = readFileSync(sourcePath, 'utf8');
-let coverageLoaded = false;
+import { vi } from 'vitest';
 
 export const defaultManifest = {
   version: 'test-version',
@@ -35,34 +29,30 @@ export const defaultManifest = {
   ],
 };
 
-const markup = `<!doctype html>
-<html><body>
-  <div id="brand-grid"></div>
-  <div id="asset-list"></div>
-  <input id="asset-filter">
-  <span id="manifest-version"></span>
-  <span id="brand-count"></span>
-  <div id="progress"></div>
-  <code id="raw-path">https://raw.example.test/path</code>
-  <button id="copy-path">Kopieren</button>
-</body></html>`;
+const markup = `<div id="brand-grid"></div>
+<div id="asset-list"></div>
+<input id="asset-filter">
+<span id="manifest-version"></span>
+<span id="brand-count"></span>
+<div id="progress"></div>
+<code id="raw-path">https://raw.example.test/path</code>
+<button id="copy-path">Kopieren</button>`;
 
-export async function loadBrandJs({ fetchImpl, manifest = defaultManifest, consoleError } = {}) {
-  const dom = new JSDOM(markup, {
-    runScripts: 'dangerously',
-    url: 'https://example.test/',
-  });
-  const fetch = fetchImpl || (async () => ({ ok: true, json: async () => manifest }));
-  dom.window.fetch = fetch;
-  if (consoleError) dom.window.console.error = consoleError;
-  if (!coverageLoaded) {
-    globalThis.window = dom.window;
-    globalThis.document = dom.window.document;
-    globalThis.fetch = fetch;
-    await import('../../brand.js?coverage');
-    coverageLoaded = true;
+export async function loadBrandJs({ fetchImpl, manifest = defaultManifest, clipboard } = {}) {
+  document.body.innerHTML = markup;
+  const fetch = fetchImpl || vi.fn(async () => ({
+    ok: true,
+    json: async () => structuredClone(manifest),
+  }));
+  globalThis.fetch = fetch;
+  if (clipboard) {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: clipboard,
+    });
   }
-  dom.window.eval(`${source}\n//# sourceURL=${sourcePath}`);
-  await new Promise((resolve) => dom.window.setTimeout(resolve, 0));
-  return dom;
+  vi.resetModules();
+  await import('../../brand.js');
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  return { fetch };
 }

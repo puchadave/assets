@@ -169,3 +169,31 @@ def test_main_generates_complete_set_for_configured_brand(tmp_path, monkeypatch,
     build_assets.main(tmp_path)
     _assert_generated_set(base)
     assert "Generated complete brand asset sets and Proxmox exports." in capsys.readouterr().out
+
+
+def test_build_proxmox_generates_complete_set(tmp_path, monkeypatch):
+    base = tmp_path / "webOwie" / "corporate"
+    svgdir = base / "logos" / "svg"
+    svgdir.mkdir(parents=True)
+    logo_source = svgdir / "webOwie_horizontal_transparent.svg"
+    icon_source = svgdir / "webOwie_icon.svg"
+    logo_source.write_text("<svg>logo</svg>")
+    icon_source.write_text("<svg>icon</svg>")
+    monkeypatch.setattr(build_assets, "render_svg", _fake_render_svg)
+
+    build_assets.build_proxmox(tmp_path)
+
+    output = base / "proxmox"
+    for relative in [
+        "proxmox_logo.png",
+        "logo-128.png",
+        "dd_logo.png",
+        "favicon.ico",
+        "proxmox_logo.svg",
+        "pve-background-1920x1080.png",
+    ]:
+        assert (output / relative).is_file(), relative
+    assert (output / "proxmox_logo.svg").read_text() == logo_source.read_text()
+    with Image.open(output / "pve-background-1920x1080.png") as background:
+        assert background.mode == "RGB"
+        assert background.size == (1920, 1080)
