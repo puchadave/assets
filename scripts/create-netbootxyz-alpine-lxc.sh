@@ -164,6 +164,24 @@ echo "[container] Preparing webroot..."
 mkdir -p "${WEBROOT}" /run/nginx
 cd "${WEBROOT}"
 
+echo "[container] Fetching netboot.xyz checksums..."
+curl -fL --retry 5 --connect-timeout 20 \
+  -o netboot.xyz-sha256-checksums.txt \
+  "${BASE_URL}/netboot.xyz-sha256-checksums.txt"
+
+verify_checksum() {
+  entry="$(grep -E "^[0-9a-f]{64} \*$1\$" netboot.xyz-sha256-checksums.txt || true)"
+  if [ -z "${entry}" ]; then
+    echo "WARN: no published checksum for $1, skipping verification"
+    return 0
+  fi
+  if ! printf '%s\n' "${entry}" | sha256sum -c - >/dev/null 2>&1; then
+    rm -f "$1"
+    echo "ERROR: checksum mismatch for $1, file removed" >&2
+    return 1
+  fi
+}
+
 echo "[container] Fetching netboot.xyz menus..."
 curl -fL --retry 5 --connect-timeout 20 \
   -o menus.tar.gz \
@@ -175,9 +193,13 @@ rm -f menus.tar.gz
 echo "[container] Fetching netboot.xyz boot files..."
 for f in ${BOOT_FILES}; do
   echo "  -> ${f}"
-  curl -fL --retry 5 --connect-timeout 20 \
+  if curl -fL --retry 5 --connect-timeout 20 \
     -o "${f}" \
-    "${BASE_URL}/${f}" || echo "WARN: could not fetch ${f}"
+    "${BASE_URL}/${f}"; then
+    verify_checksum "${f}"
+  else
+    echo "WARN: could not fetch ${f}"
+  fi
 done
 
 echo "[container] Configuring nginx..."
