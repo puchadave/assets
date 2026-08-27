@@ -16,7 +16,7 @@ Additionally for webOwie:
 """
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
-import cairosvg, io, json, shutil
+import io, json, shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets" / "img"
@@ -27,6 +27,7 @@ def fnt(size,bold=False):
     return ImageFont.truetype(FONT_BOLD if bold else FONT_REG,size)
 
 def render_svg(path,width=1600):
+    import cairosvg
     data=cairosvg.svg2png(url=str(path),output_width=width)
     return Image.open(io.BytesIO(data)).convert("RGBA")
 
@@ -78,8 +79,8 @@ BRANDS = [
  ("bnd.zone/subbrands/cybersicherheit","bnd.zone_cybersicherheit_horizontal.svg","bnd.zone_cybersicherheit_icon.svg","#001A44"),
 ]
 
-for rel,logo_name,icon_name,accent in BRANDS:
-    base=ASSETS/rel
+def build_brand(rel,logo_name,icon_name,accent,assets_root=ASSETS):
+    base=assets_root/rel
     cfg=json.loads((base/"brand.json").read_text())
     cfg["accent"]=accent
     svgdir=base/"logos/svg"
@@ -104,23 +105,32 @@ for rel,logo_name,icon_name,accent in BRANDS:
     for name,size in {"og-image-1200x630.png":(1200,630),"github-social-preview-1280x640.png":(1280,640),"x-cover-1500x500.png":(1500,500),"linkedin-cover-1584x396.png":(1584,396),"facebook-cover-1640x624.png":(1640,624),"youtube-banner-2560x1440.png":(2560,1440)}.items():
         banner(logo,cfg,size,"social").save(social/name)
 
-web=ASSETS/"webOwie/corporate"
-svgdir=web/"logos/svg"
-pve=web/"proxmox"
-pve.mkdir(parents=True,exist_ok=True)
-web_logo=render_svg(svgdir/"webOwie_horizontal_transparent.svg",1800)
-web_icon=render_svg(svgdir/"webOwie_icon.svg",1024)
-contain(web_logo,(209,30),1,(0,0,0,0)).save(pve/"proxmox_logo.png")
-contain(web_icon,(128,128),18,"#000000").save(pve/"logo-128.png")
-contain(web_icon,(128,128),18,"#000000").save(pve/"dd_logo.png")
-favicon(web_icon,pve/"favicon.ico")
-shutil.copy2(svgdir/"webOwie_horizontal_transparent.svg",pve/"proxmox_logo.svg")
-bg=grid((1920,1080),"#5DD9E8")
-wm=contain(web_icon,(620,620),80,(0,0,0,0))
-wm.putalpha(wm.getchannel("A").point(lambda a:int(a*.11)))
-bg.alpha_composite(wm,(1200,310))
-d=ImageDraw.Draw(bg)
-d.text((90,900),"webOwie  //  INFRASTRUCTURE CONTROL PLANE",font=fnt(34,True),fill="#F5F5F5")
-d.text((90,955),"puchalla.it.com   ·   Powered by Proxmox VE",font=fnt(22),fill="#BFC3C7")
-bg.convert("RGB").save(pve/"pve-background-1920x1080.png")
-print("Generated complete brand asset sets and Proxmox exports.")
+def build_proxmox(assets_root=ASSETS):
+    web=assets_root/"webOwie/corporate"
+    svgdir=web/"logos/svg"
+    pve=web/"proxmox"
+    pve.mkdir(parents=True,exist_ok=True)
+    web_logo=render_svg(svgdir/"webOwie_horizontal_transparent.svg",1800)
+    web_icon=render_svg(svgdir/"webOwie_icon.svg",1024)
+    contain(web_logo,(209,30),1,(0,0,0,0)).save(pve/"proxmox_logo.png")
+    contain(web_icon,(128,128),18,"#000000").save(pve/"logo-128.png")
+    contain(web_icon,(128,128),18,"#000000").save(pve/"dd_logo.png")
+    favicon(web_icon,pve/"favicon.ico")
+    shutil.copy2(svgdir/"webOwie_horizontal_transparent.svg",pve/"proxmox_logo.svg")
+    bg=grid((1920,1080),"#5DD9E8")
+    wm=contain(web_icon,(620,620),80,(0,0,0,0))
+    wm.putalpha(wm.getchannel("A").point(lambda a:int(a*.11)))
+    bg.alpha_composite(wm,(1200,310))
+    d=ImageDraw.Draw(bg)
+    d.text((90,900),"webOwie  //  INFRASTRUCTURE CONTROL PLANE",font=fnt(34,True),fill="#F5F5F5")
+    d.text((90,955),"puchalla.it.com   ·   Powered by Proxmox VE",font=fnt(22),fill="#BFC3C7")
+    bg.convert("RGB").save(pve/"pve-background-1920x1080.png")
+
+def main(assets_root=ASSETS):
+    for rel,logo_name,icon_name,accent in BRANDS:
+        build_brand(rel,logo_name,icon_name,accent,assets_root)
+    build_proxmox(assets_root)
+    print("Generated complete brand asset sets and Proxmox exports.")
+
+if __name__ == "__main__":
+    main()

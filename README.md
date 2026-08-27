@@ -32,6 +32,23 @@ Der Subbrand `webOwie AI` verwendet die webOwie-Dachmarke unverändert und kennz
 
 Maschinenlesbarer Index: `assets/img/manifest.json`
 
+## Tests
+
+Die Python- und JavaScript-Suiten werden getrennt ausgeführt. Für die Python-Tests
+werden die Entwicklungsabhängigkeiten installiert:
+
+```sh
+python3 -m pip install -r requirements-dev.txt
+python3 -m pytest --cov=scripts --cov-report=term-missing
+```
+
+Für die Tests des Brand-Portals:
+
+```sh
+npm ci
+npm run test:coverage
+```
+
 ## Asset-Prinzip
 
 SVG und ausdrücklich bereitgestellte Originaldateien sind die visuelle Quelle der Wahrheit. Abgeleitete PNG/JPG-Dateien dürfen automatisiert erzeugt werden, sollen die Originale aber nicht ersetzen. Bestehende Pfade sollten möglichst stabil bleiben, damit Websites, Installer, Forks und Automatisierungen nicht durch Umbenennungen brechen.
