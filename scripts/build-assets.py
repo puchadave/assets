@@ -16,19 +16,49 @@ Additionally for webOwie:
 """
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
-import cairosvg, io, json, shutil
+import cairosvg, io, json, shutil, sys
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets" / "img"
 FONT_REG = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+REQUIRED_CFG_KEYS = ("brand","tagline")
+
+class BuildError(RuntimeError):
+    """Raised for actionable build failures (missing sources, invalid config)."""
 
 def fnt(size,bold=False):
-    return ImageFont.truetype(FONT_BOLD if bold else FONT_REG,size)
+    path=FONT_BOLD if bold else FONT_REG
+    try:
+        return ImageFont.truetype(path,size)
+    except OSError as e:
+        raise BuildError(f"Font not available: {path} (install fonts-dejavu-core)") from e
 
 def render_svg(path,width=1600):
-    data=cairosvg.svg2png(url=str(path),output_width=width)
-    return Image.open(io.BytesIO(data)).convert("RGBA")
+    if not Path(path).is_file():
+        raise BuildError(f"Canonical SVG source missing: {path}")
+    try:
+        data=cairosvg.svg2png(url=str(path),output_width=width)
+        return Image.open(io.BytesIO(data)).convert("RGBA")
+    except BuildError:
+        raise
+    except Exception as e:
+        raise BuildError(f"Could not render SVG {path} at width {width}: {e}") from e
+
+def load_cfg(path,accent):
+    try:
+        cfg=json.loads(path.read_text())
+    except FileNotFoundError as e:
+        raise BuildError(f"Brand config missing: {path}") from e
+    except json.JSONDecodeError as e:
+        raise BuildError(f"Brand config is not valid JSON: {path} ({e})") from e
+    if not isinstance(cfg,dict):
+        raise BuildError(f"Brand config must be a JSON object: {path}")
+    missing=[k for k in REQUIRED_CFG_KEYS if not cfg.get(k)]
+    if missing:
+        raise BuildError(f"Brand config {path} is missing required key(s): {', '.join(missing)}")
+    cfg["accent"]=accent
+    return cfg
 
 def contain(img,size,padding=0,bg=(0,0,0,0)):
     c=Image.new("RGBA",size,bg)
@@ -48,7 +78,10 @@ def grid(size,accent):
     d=ImageDraw.Draw(im)
     for x in range(0,w,80): d.line((x,0,x,h),fill=(35,38,42,90))
     for y in range(0,h,80): d.line((0,y,w,y),fill=(35,38,42,90))
-    rgb=tuple(int(accent[i:i+2],16) for i in (1,3,5))
+    try:
+        rgb=tuple(int(accent[i:i+2],16) for i in (1,3,5))
+    except (ValueError,IndexError) as e:
+        raise BuildError(f"Accent color must be a #RRGGBB hex value, got {accent!r}") from e
     d.rectangle((0,0,10,h),fill=rgb+(255,))
     d.rectangle((10,0,18,h),fill=rgb+(70,))
     return im
@@ -78,10 +111,11 @@ BRANDS = [
  ("bnd.zone/subbrands/cybersicherheit","bnd.zone_cybersicherheit_horizontal.svg","bnd.zone_cybersicherheit_icon.svg","#001A44"),
 ]
 
-for rel,logo_name,icon_name,accent in BRANDS:
+def build_brand(rel,logo_name,icon_name,accent):
     base=ASSETS/rel
-    cfg=json.loads((base/"brand.json").read_text())
-    cfg["accent"]=accent
+    if not base.is_dir():
+        raise BuildError(f"Brand directory missing: {base}")
+    cfg=load_cfg(base/"brand.json",accent)
     svgdir=base/"logos/svg"
     out_logo=base/"logos/png"; out_logo.mkdir(parents=True,exist_ok=True)
     fav=base/"favicons"; fav.mkdir(parents=True,exist_ok=True)
@@ -104,23 +138,44 @@ for rel,logo_name,icon_name,accent in BRANDS:
     for name,size in {"og-image-1200x630.png":(1200,630),"github-social-preview-1280x640.png":(1280,640),"x-cover-1500x500.png":(1500,500),"linkedin-cover-1584x396.png":(1584,396),"facebook-cover-1640x624.png":(1640,624),"youtube-banner-2560x1440.png":(2560,1440)}.items():
         banner(logo,cfg,size,"social").save(social/name)
 
-web=ASSETS/"webOwie/corporate"
-svgdir=web/"logos/svg"
-pve=web/"proxmox"
-pve.mkdir(parents=True,exist_ok=True)
-web_logo=render_svg(svgdir/"webOwie_horizontal_transparent.svg",1800)
-web_icon=render_svg(svgdir/"webOwie_icon.svg",1024)
-contain(web_logo,(209,30),1,(0,0,0,0)).save(pve/"proxmox_logo.png")
-contain(web_icon,(128,128),18,"#000000").save(pve/"logo-128.png")
-contain(web_icon,(128,128),18,"#000000").save(pve/"dd_logo.png")
-favicon(web_icon,pve/"favicon.ico")
-shutil.copy2(svgdir/"webOwie_horizontal_transparent.svg",pve/"proxmox_logo.svg")
-bg=grid((1920,1080),"#5DD9E8")
-wm=contain(web_icon,(620,620),80,(0,0,0,0))
-wm.putalpha(wm.getchannel("A").point(lambda a:int(a*.11)))
-bg.alpha_composite(wm,(1200,310))
-d=ImageDraw.Draw(bg)
-d.text((90,900),"webOwie  //  INFRASTRUCTURE CONTROL PLANE",font=fnt(34,True),fill="#F5F5F5")
-d.text((90,955),"puchalla.it.com   ·   Powered by Proxmox VE",font=fnt(22),fill="#BFC3C7")
-bg.convert("RGB").save(pve/"pve-background-1920x1080.png")
-print("Generated complete brand asset sets and Proxmox exports.")
+def build_proxmox_exports():
+    web=ASSETS/"webOwie/corporate"
+    svgdir=web/"logos/svg"
+    pve=web/"proxmox"
+    pve.mkdir(parents=True,exist_ok=True)
+    web_logo=render_svg(svgdir/"webOwie_horizontal_transparent.svg",1800)
+    web_icon=render_svg(svgdir/"webOwie_icon.svg",1024)
+    contain(web_logo,(209,30),1,(0,0,0,0)).save(pve/"proxmox_logo.png")
+    contain(web_icon,(128,128),18,"#000000").save(pve/"logo-128.png")
+    contain(web_icon,(128,128),18,"#000000").save(pve/"dd_logo.png")
+    favicon(web_icon,pve/"favicon.ico")
+    shutil.copy2(svgdir/"webOwie_horizontal_transparent.svg",pve/"proxmox_logo.svg")
+    bg=grid((1920,1080),"#5DD9E8")
+    wm=contain(web_icon,(620,620),80,(0,0,0,0))
+    wm.putalpha(wm.getchannel("A").point(lambda a:int(a*.11)))
+    bg.alpha_composite(wm,(1200,310))
+    d=ImageDraw.Draw(bg)
+    d.text((90,900),"webOwie  //  INFRASTRUCTURE CONTROL PLANE",font=fnt(34,True),fill="#F5F5F5")
+    d.text((90,955),"puchalla.it.com   ·   Powered by Proxmox VE",font=fnt(22),fill="#BFC3C7")
+    bg.convert("RGB").save(pve/"pve-background-1920x1080.png")
+
+def main():
+    for rel,logo_name,icon_name,accent in BRANDS:
+        try:
+            build_brand(rel,logo_name,icon_name,accent)
+        except BuildError as e:
+            raise BuildError(f"[{rel}] {e}") from e
+        except Exception as e:
+            raise BuildError(f"[{rel}] unexpected failure: {type(e).__name__}: {e}") from e
+    try:
+        build_proxmox_exports()
+    except BuildError as e:
+        raise BuildError(f"[webOwie/corporate/proxmox] {e}") from e
+    print("Generated complete brand asset sets and Proxmox exports.")
+
+if __name__=="__main__":
+    try:
+        main()
+    except BuildError as e:
+        print(f"ERROR: asset build failed: {e}",file=sys.stderr)
+        sys.exit(1)
