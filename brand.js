@@ -9,9 +9,11 @@ const rawPath=document.getElementById('raw-path');
 let manifest={brands:[],canonicalRawBase:'https://raw.githubusercontent.com/puchadave/assets/main/'};
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function safeColor(v=''){return /^#[0-9a-fA-F]{3,8}$/.test(v)?v:'';}
+function safeUrl(v=''){return /^https:\/\//.test(v)?v:'#';}
 function initials(name=''){return name.split(/[\s._-]+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'•';}
 function repoPath(path=''){return `https://github.com/puchadave/assets/tree/main/${path}`;}
-function rawAsset(path=''){return `${manifest.canonicalRawBase||'https://raw.githubusercontent.com/puchadave/assets/main/'}${path}`;}
+function rawAsset(path=''){return safeUrl(`${manifest.canonicalRawBase||'https://raw.githubusercontent.com/puchadave/assets/main/'}${path}`);}
 function fallbackMark(b){return `<span class="mark-fallback"><i>${esc(initials(b.name))}</i>${esc(b.name)}</span>`;}
 
 function renderBrands(){
@@ -21,7 +23,7 @@ function renderBrands(){
     const mark=primary
       ? `<img class="brand-logo" src="${esc(rawAsset(primary.path))}" alt="${esc(b.name)} Logo" data-brand-id="${esc(b.id)}">`
       : fallbackMark(b);
-    const accent=b.accent?`style="--brand-accent:${esc(b.accent)}"`:'';
+    const accent=safeColor(b.accent)?`style="--brand-accent:${safeColor(b.accent)}"`:'';
     return `<article class="brand-card" ${accent}>
       <div class="mark">${mark}</div>
       <div class="brand-meta"><div><h3>${esc(b.name)}</h3><p>${esc(b.description)}</p></div><span class="brand-type">${esc(b.type)}</span></div>
