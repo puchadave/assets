@@ -26,13 +26,41 @@ FUSE="${var_fuse:-yes}"
 TUN="${var_tun:-no}"
 GPU="${var_gpu:-no}"
 
+TOTAL_STEPS=8
+
+log() {
+  echo "$*"
+}
+
+warn() {
+  log "WARN: $*"
+}
+
 die() {
   echo "ERROR: $*" >&2
   exit 1
 }
 
+step() {
+  local number="$1"
+  shift
+  log "[${number}/${TOTAL_STEPS}] $*"
+}
+
 need() {
   command -v "$1" >/dev/null 2>&1 || die "Missing command: $1"
+}
+
+alpine_templates() {
+  pveam available --section system
+}
+
+container_ip() {
+  pct exec "$1" -- /bin/sh -lc "ip -4 addr show eth0 | awk '/inet / {print \$2}' | cut -d/ -f1 | head -n1" || true
+}
+
+kv() {
+  printf '%-25s: %s\n' "$1" "$2"
 }
 
 need pct
@@ -41,17 +69,17 @@ need pvesh
 
 [[ "$(id -u)" -eq 0 ]] || die "Run as root on the Proxmox host."
 
-echo "[1/8] Updating Proxmox template index..."
+step 1 "Updating Proxmox template index..."
 pveam update >/dev/null
 
-echo "[2/8] Finding Alpine template..."
-TEMPLATE="$(pveam available --section system | awk -v ver="$ALPINE_VER" '
+step 2 "Finding Alpine template..."
+TEMPLATE="$(alpine_templates | awk -v ver="$ALPINE_VER" '
   $2 ~ "alpine-"ver"-default_.*amd64.*\\.tar\\." {print $2; exit}
 ')"
 
 if [[ -z "${TEMPLATE}" ]]; then
-  echo "WARN: Alpine ${ALPINE_VER} not found, falling back to newest Alpine amd64 template."
-  TEMPLATE="$(pveam available --section system | awk '
+  warn "Alpine ${ALPINE_VER} not found, falling back to newest Alpine amd64 template."
+  TEMPLATE="$(alpine_templates | awk '
     $2 ~ /alpine-[0-9.]+-default_.*amd64.*\.tar\./ {print $2}
   ' | sort -V | tail -n1)"
 fi
@@ -59,10 +87,10 @@ fi
 [[ -n "${TEMPLATE}" ]] || die "No Alpine amd64 template found."
 
 if ! pveam list "${TEMPLATE_STORAGE}" | awk '{print $1}' | grep -q "vztmpl/${TEMPLATE}$"; then
-  echo "[3/8] Downloading template ${TEMPLATE} to ${TEMPLATE_STORAGE}..."
+  step 3 "Downloading template ${TEMPLATE} to ${TEMPLATE_STORAGE}..."
   pveam download "${TEMPLATE_STORAGE}" "${TEMPLATE}"
 else
-  echo "[3/8] Template already present: ${TEMPLATE}"
+  step 3 "Template already present: ${TEMPLATE}"
 fi
 
 TEMPLATE_REF="${TEMPLATE_STORAGE}:vztmpl/${TEMPLATE}"
@@ -76,7 +104,7 @@ if [[ "${FUSE}" == "yes" ]]; then
   FEATURES="${FEATURES},fuse=1"
 fi
 
-echo "[4/8] Creating Alpine LXC ${CTID}..."
+step 4 "Creating Alpine LXC ${CTID}..."
 pct create "${CTID}" "${TEMPLATE_REF}" \
   --hostname "${HOSTNAME}" \
   --ostype alpine \
@@ -91,7 +119,7 @@ pct create "${CTID}" "${TEMPLATE_REF}" \
   --start 0
 
 if [[ "${TUN}" == "yes" ]]; then
-  echo "[4b] Adding /dev/net/tun passthrough..."
+  log "[4b] Adding /dev/net/tun passthrough..."
   cat >>"/etc/pve/lxc/${CTID}.conf" <<'TUNCONF'
 lxc.cgroup2.devices.allow: c 10:200 rwm
 lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
@@ -99,10 +127,10 @@ TUNCONF
 fi
 
 if [[ "${GPU}" == "yes" ]]; then
-  echo "WARN: var_gpu=yes ignored. A PXE/TFTP/web server does not need GPU passthrough."
+  warn "var_gpu=yes ignored. A PXE/TFTP/web server does not need GPU passthrough."
 fi
 
-echo "[5/8] Starting container..."
+step 5 "Starting container..."
 pct start "${CTID}"
 sleep 5
 
@@ -147,7 +175,15 @@ netboot.xyz-multiarch.img
 netboot.xyz-sha256-checksums.txt
 "
 
-echo "[container] Installing packages..."
+log() {
+  echo "[container] $*"
+}
+
+fetch() {
+  curl -fL --retry 5 --connect-timeout 20 -o "$1" "${BASE_URL}/$1"
+}
+
+log "Installing packages..."
 apk update
 apk add --no-cache \
   bash \
@@ -160,27 +196,23 @@ apk add --no-cache \
 
 update-ca-certificates || true
 
-echo "[container] Preparing webroot..."
+log "Preparing webroot..."
 mkdir -p "${WEBROOT}" /run/nginx
 cd "${WEBROOT}"
 
-echo "[container] Fetching netboot.xyz menus..."
-curl -fL --retry 5 --connect-timeout 20 \
-  -o menus.tar.gz \
-  "${BASE_URL}/menus.tar.gz"
+log "Fetching netboot.xyz menus..."
+fetch menus.tar.gz
 
 tar -xzf menus.tar.gz
 rm -f menus.tar.gz
 
-echo "[container] Fetching netboot.xyz boot files..."
+log "Fetching netboot.xyz boot files..."
 for f in ${BOOT_FILES}; do
   echo "  -> ${f}"
-  curl -fL --retry 5 --connect-timeout 20 \
-    -o "${f}" \
-    "${BASE_URL}/${f}" || echo "WARN: could not fetch ${f}"
+  fetch "${f}" || echo "WARN: could not fetch ${f}"
 done
 
-echo "[container] Configuring nginx..."
+log "Configuring nginx..."
 cat >/etc/nginx/http.d/default.conf <<'NGINX'
 server {
     listen 80 default_server;
@@ -190,29 +222,24 @@ server {
     index index.html;
     server_name _;
 
-    location / {
-        autoindex on;
-        add_header Access-Control-Allow-Origin "*";
-        add_header Access-Control-Allow-Headers "Content-Type";
-    }
+    autoindex on;
+    add_header Access-Control-Allow-Origin "*";
+    add_header Access-Control-Allow-Headers "Content-Type";
 
     location /ipxe/ {
         alias /var/www/html/;
-        autoindex on;
-        add_header Access-Control-Allow-Origin "*";
-        add_header Access-Control-Allow-Headers "Content-Type";
     }
 }
 NGINX
 
-echo "[container] Configuring TFTP..."
+log "Configuring TFTP..."
 cat >/etc/conf.d/in.tftpd <<'TFTP'
 INTFTPD_PATH="/var/www/html"
 INTFTPD_USER="nobody"
 INTFTPD_OPTS="-u ${INTFTPD_USER} -R 4096:32767 -s ${INTFTPD_PATH}"
 TFTP
 
-echo "[container] Enabling services..."
+log "Enabling services..."
 rc-update add nginx default
 rc-update add in.tftpd default
 
@@ -243,30 +270,30 @@ UEFI x64:
 
 MOTD
 
-echo "[container] Done. HTTP: http://${IP}/"
+log "Done. HTTP: http://${IP}/"
 INSTALL
 
-echo "[6/8] Pushing installer into container..."
+step 6 "Pushing installer into container..."
 pct push "${CTID}" /tmp/netbootxyz-install-alpine.sh /root/netbootxyz-install-alpine.sh --perms 0755
 
-echo "[7/8] Installing netboot.xyz inside Alpine..."
+step 7 "Installing netboot.xyz inside Alpine..."
 pct exec "${CTID}" -- /bin/sh /root/netbootxyz-install-alpine.sh
 
-IP="$(pct exec "${CTID}" -- /bin/sh -lc "ip -4 addr show eth0 | awk '/inet / {print \$2}' | cut -d/ -f1 | head -n1" || true)"
+IP="$(container_ip "${CTID}")"
 
-echo "[8/8] Completed."
-echo
-echo "Container: ${CTID}"
-echo "Hostname : ${HOSTNAME}"
-echo "IP       : ${IP}"
-echo "HTTP     : http://${IP}/"
-echo "TFTP     : ${IP}:69"
-echo
-echo "DHCP/Technitium PXE settings:"
-echo "  next-server / option 66 : ${IP}"
-echo "  UEFI x64 filename       : netboot.xyz.efi"
-echo "  UEFI SNP fallback       : netboot.xyz-snp.efi"
-echo "  Legacy BIOS filename    : netboot.xyz.kpxe"
-echo "  Legacy fallback         : netboot.xyz-undionly.kpxe"
-echo
-echo "Firewall, if enabled: allow TCP 80 and UDP 69."
+step 8 "Completed."
+log
+kv "Container" "${CTID}"
+kv "Hostname" "${HOSTNAME}"
+kv "IP" "${IP}"
+kv "HTTP" "http://${IP}/"
+kv "TFTP" "${IP}:69"
+log
+log "DHCP/Technitium PXE settings:"
+kv "  next-server / option 66" "${IP}"
+kv "  UEFI x64 filename" "netboot.xyz.efi"
+kv "  UEFI SNP fallback" "netboot.xyz-snp.efi"
+kv "  Legacy BIOS filename" "netboot.xyz.kpxe"
+kv "  Legacy fallback" "netboot.xyz-undionly.kpxe"
+log
+log "Firewall, if enabled: allow TCP 80 and UDP 69."
