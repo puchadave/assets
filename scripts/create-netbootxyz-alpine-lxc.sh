@@ -8,7 +8,6 @@ set -euo pipefail
 # ============================================================
 
 APP="netboot.xyz"
-CTID="${CTID:-$(pvesh get /cluster/nextid 2>/dev/null || echo 180)}"
 HOSTNAME="${HOSTNAME:-netboot-xyz}"
 TEMPLATE_STORAGE="${TEMPLATE_STORAGE:-local}"
 ROOTFS_STORAGE="${ROOTFS_STORAGE:-local-lvm}"
@@ -31,15 +30,27 @@ die() {
   exit 1
 }
 
+warn() {
+  echo "WARN: $*" >&2
+}
+
 need() {
   command -v "$1" >/dev/null 2>&1 || die "Missing command: $1"
 }
+
+trap 'echo "ERROR: ${BASH_SOURCE[0]}: aborted with status $? at line $LINENO: ${BASH_COMMAND}" >&2' ERR
 
 need pct
 need pveam
 need pvesh
 
 [[ "$(id -u)" -eq 0 ]] || die "Run as root on the Proxmox host."
+
+if [[ -z "${CTID:-}" ]]; then
+  CTID="$(pvesh get /cluster/nextid)" \
+    || die "Could not determine a free CTID via 'pvesh get /cluster/nextid'. Pass one explicitly: CTID=180 bash $0"
+  [[ "${CTID}" =~ ^[0-9]+$ ]] || die "Unexpected CTID from pvesh: '${CTID}'. Pass one explicitly: CTID=180 bash $0"
+fi
 
 echo "[1/8] Updating Proxmox template index..."
 pveam update >/dev/null
@@ -103,8 +114,21 @@ if [[ "${GPU}" == "yes" ]]; then
 fi
 
 echo "[5/8] Starting container..."
-pct start "${CTID}"
-sleep 5
+pct start "${CTID}" || die "Could not start container ${CTID}. Check 'pct start ${CTID}' output and /var/log/pve."
+
+for _ in $(seq 1 30); do
+  [[ "$(pct status "${CTID}" 2>/dev/null)" == "status: running" ]] && break
+  sleep 1
+done
+[[ "$(pct status "${CTID}" 2>/dev/null)" == "status: running" ]] \
+  || die "Container ${CTID} did not reach state 'running'."
+
+for _ in $(seq 1 30); do
+  pct exec "${CTID}" -- /bin/sh -c 'exit 0' >/dev/null 2>&1 && break
+  sleep 1
+done
+pct exec "${CTID}" -- /bin/sh -c 'exit 0' >/dev/null 2>&1 \
+  || die "Container ${CTID} is running but does not accept 'pct exec' commands."
 
 cat >/tmp/netbootxyz-install-alpine.sh <<'INSTALL'
 #!/bin/sh
@@ -112,6 +136,14 @@ set -eu
 
 WEBROOT="/var/www/html"
 BASE_URL="https://github.com/netbootxyz/netboot.xyz/releases/latest/download"
+
+# Without these files the PXE server cannot serve UEFI or legacy BIOS clients.
+ESSENTIAL_FILES="
+netboot.xyz.efi
+netboot.xyz-snp.efi
+netboot.xyz.kpxe
+netboot.xyz-undionly.kpxe
+"
 
 BOOT_FILES="
 netboot.xyz.efi
@@ -158,27 +190,42 @@ apk add --no-cache \
   tftp-hpa \
   tftp-hpa-openrc
 
-update-ca-certificates || true
+update-ca-certificates || echo "WARN: update-ca-certificates failed; TLS downloads may fail." >&2
 
 echo "[container] Preparing webroot..."
 mkdir -p "${WEBROOT}" /run/nginx
 cd "${WEBROOT}"
 
 echo "[container] Fetching netboot.xyz menus..."
-curl -fL --retry 5 --connect-timeout 20 \
-  -o menus.tar.gz \
-  "${BASE_URL}/menus.tar.gz"
+if ! curl -fL --retry 5 --connect-timeout 20 -o menus.tar.gz "${BASE_URL}/menus.tar.gz"; then
+  echo "ERROR: could not download ${BASE_URL}/menus.tar.gz" >&2
+  exit 1
+fi
 
 tar -xzf menus.tar.gz
 rm -f menus.tar.gz
 
 echo "[container] Fetching netboot.xyz boot files..."
+FAILED_FILES=""
 for f in ${BOOT_FILES}; do
   echo "  -> ${f}"
-  curl -fL --retry 5 --connect-timeout 20 \
-    -o "${f}" \
-    "${BASE_URL}/${f}" || echo "WARN: could not fetch ${f}"
+  if ! curl -fL --retry 5 --connect-timeout 20 -o "${f}" "${BASE_URL}/${f}"; then
+    rm -f "${f}"
+    FAILED_FILES="${FAILED_FILES}${f} "
+    echo "WARN: could not fetch ${f}" >&2
+  fi
 done
+
+MISSING_ESSENTIAL=""
+for f in ${ESSENTIAL_FILES}; do
+  [ -s "${f}" ] || MISSING_ESSENTIAL="${MISSING_ESSENTIAL}${f} "
+done
+if [ -n "${MISSING_ESSENTIAL}" ]; then
+  echo "ERROR: essential boot files could not be downloaded: ${MISSING_ESSENTIAL}" >&2
+  echo "ERROR: the PXE server would be unusable, aborting." >&2
+  exit 1
+fi
+[ -z "${FAILED_FILES}" ] || echo "WARN: optional boot files missing: ${FAILED_FILES}" >&2
 
 echo "[container] Configuring nginx..."
 cat >/etc/nginx/http.d/default.conf <<'NGINX'
@@ -222,6 +269,10 @@ rc-service in.tftpd restart
 touch /root/.netboot-xyz
 
 IP="$(ip -4 addr show eth0 | awk '/inet / {print $2}' | cut -d/ -f1 | head -n1 || true)"
+if [ -z "${IP}" ]; then
+  IP="<no IPv4 on eth0>"
+  echo "WARN: no IPv4 address on eth0; check DHCP or set IPCONFIG=ip=<addr>/<cidr>,gw=<gw>." >&2
+fi
 
 cat >/etc/motd <<MOTD
 
@@ -247,12 +298,18 @@ echo "[container] Done. HTTP: http://${IP}/"
 INSTALL
 
 echo "[6/8] Pushing installer into container..."
-pct push "${CTID}" /tmp/netbootxyz-install-alpine.sh /root/netbootxyz-install-alpine.sh --perms 0755
+pct push "${CTID}" /tmp/netbootxyz-install-alpine.sh /root/netbootxyz-install-alpine.sh --perms 0755 \
+  || die "Could not push the installer into container ${CTID}."
 
 echo "[7/8] Installing netboot.xyz inside Alpine..."
-pct exec "${CTID}" -- /bin/sh /root/netbootxyz-install-alpine.sh
+pct exec "${CTID}" -- /bin/sh /root/netbootxyz-install-alpine.sh \
+  || die "netboot.xyz installation inside container ${CTID} failed (see output above). The container is left running for inspection: pct enter ${CTID}"
 
 IP="$(pct exec "${CTID}" -- /bin/sh -lc "ip -4 addr show eth0 | awk '/inet / {print \$2}' | cut -d/ -f1 | head -n1" || true)"
+if [[ -z "${IP}" ]]; then
+  warn "Could not determine the container IPv4 address; check DHCP on bridge ${BRIDGE} or set IPCONFIG explicitly."
+  IP="<unknown>"
+fi
 
 echo "[8/8] Completed."
 echo
